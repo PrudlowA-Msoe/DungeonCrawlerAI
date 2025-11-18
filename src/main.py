@@ -6,8 +6,9 @@ import pygame
 from config import GRID_WIDTH, GRID_HEIGHT, TILE_SIZE, FPS, COLOR_BG
 from dungeon import Dungeon
 from agent import Agent, Action
-from controllers import RandomWalkerController
+from controllers import RandomWalkerController, DecisionTreeController
 
+BEST_GENOME = [0, 0, 2, 1, 1, 1, 0, 0, 3]
 
 def handle_keyboard_input() -> Optional[Action]:
     keys = pygame.key.get_pressed()
@@ -26,7 +27,7 @@ def run_game() -> None:
     pygame.init()
     screen_size = (GRID_WIDTH * TILE_SIZE, GRID_HEIGHT * TILE_SIZE)
     screen = pygame.display.set_mode(screen_size)
-    pygame.display.setCaption("5x5 Dungeon Prototype")
+    pygame.display.set_caption("5x5 Dungeon Prototype")
 
     clock = pygame.time.Clock()
 
@@ -34,7 +35,7 @@ def run_game() -> None:
     agent = Agent(dungeon.start_pos)
 
     use_ai_controller = False
-    ai_controller = RandomWalkerController()
+    ai_controller = DecisionTreeController(genome=BEST_GENOME)
 
     running = True
     while running:
