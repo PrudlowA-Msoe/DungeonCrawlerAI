@@ -1,9 +1,9 @@
 from typing import Tuple, Optional
 import random
 
-from src.dungeon import Dungeon
-from src.agent import Agent
-from src.controllers import BaseController, RandomWalkerController, DecisionTreeController
+from dungeon import Dungeon
+from agent import Agent
+from controllers import BaseController, RandomWalkerController, DecisionTreeController
 
 
 MAX_STEPS_PER_EPISODE = 50
