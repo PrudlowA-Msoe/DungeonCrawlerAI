@@ -1,0 +1,11 @@
+GRID_WIDTH = 5
+GRID_HEIGHT = 5
+TILE_SIZE = 96  # pixels, so window is 480x480
+FPS = 10
+
+# Colors (R, G, B)
+COLOR_BG = (25, 25, 35)
+COLOR_GRID = (60, 60, 80)
+COLOR_WALL = (90, 90, 90)
+COLOR_EXIT = (50, 200, 70)
+COLOR_AGENT = (230, 220, 80)
