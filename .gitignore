@@ -1,0 +1,45 @@
+# --- Python cache / bytecode ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+ENV/
+*.env
+
+# --- Build / dist / packaging ---
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+
+# --- Testing / coverage ---
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+.mypy_cache/
+.cache/
+
+# --- IDE / editor files ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- OS-specific junk ---
+.DS_Store
+Thumbs.db
+
+# --- Logs / misc ---
+*.log
+
+# --- PyInstaller / PyGame executables (if you package later) ---
+*.spec
+*.exe
+*.app
