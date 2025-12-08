@@ -30,7 +30,7 @@ class Agent:
     - Health n mana
     - Health/mana potions
     - Melee and magic attacks
-    - Tracks damage taken, monsters killed, potions collected
+    - Tracks damage, monsters killed, potions collected, coins collected
     """
 
     def __init__(self, start_pos: Pos):
@@ -50,6 +50,7 @@ class Agent:
         self.damage_taken: int = 0
         self.monsters_killed: int = 0
         self.potions_collected: int = 0
+        self.coins_collected: int = 0  # NEW
 
     @property
     def pos(self) -> Pos:
@@ -65,7 +66,7 @@ class Agent:
         self.damage_taken = 0
         self.monsters_killed = 0
         self.potions_collected = 0
-
+        self.coins_collected = 0
 
     def take_damage(self, amount: int) -> None:
         if amount <= 0:
@@ -74,9 +75,7 @@ class Agent:
         self.damage_taken += amount
 
     def melee_attack(self, dungeon: Dungeon) -> None:
-        """
-        Sword attack kill melee-weak monster
-        """
+        """Sword attack kills melee-weak monster"""
         for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1), (0, 0)]:
             x, y = self.x + dx, self.y + dy
             if dungeon.in_bounds(x, y) and dungeon.get_tile(x, y) == TileType.MONSTER_MELEE:
@@ -85,10 +84,7 @@ class Agent:
                 break
 
     def magic_blast(self, dungeon: Dungeon) -> None:
-        """
-        Magic blast consumes 1 mana, kills
-        magic-weak monster
-        """
+        """Magic blast consumes 1 mana, kills magic-weak monster"""
         if self.mana <= 0:
             return
         self.mana -= 1
@@ -103,7 +99,6 @@ class Agent:
     def drink_health_potion(self) -> None:
         if self.health_potions > 0 and self.health < self.max_health:
             self.health_potions -= 1
-            # Heal
             self.health = min(self.max_health, self.health + 40)
 
     def drink_mana_potion(self) -> None:
@@ -112,22 +107,25 @@ class Agent:
             self.mana = self.max_mana
 
     def _pickup_tile(self, dungeon: Dungeon) -> None:
-        """Pick up potions by moving over them"""
+        """Pick up items by moving over them"""
         tile = dungeon.get_tile(self.x, self.y)
+
         if tile == TileType.HEALTH_POTION:
             self.health_potions += 1
             self.potions_collected += 1
             dungeon.clear_tile(self.x, self.y)
+
         elif tile == TileType.MANA_POTION:
             self.mana_potions += 1
             self.potions_collected += 1
             dungeon.clear_tile(self.x, self.y)
 
+        elif tile == TileType.COIN:
+            self.coins_collected += 1
+            dungeon.clear_tile(self.x, self.y)
 
     def step(self, action: Action, dungeon: Dungeon) -> None:
-        """
-        Apply an action
-        """
+        """Apply an action"""
         dx, dy = 0, 0
 
         # Movement

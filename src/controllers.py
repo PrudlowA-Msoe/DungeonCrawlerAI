@@ -78,8 +78,8 @@ class DecisionTreeController(BaseController):
 
     @classmethod
     def num_genes(cls) -> int:
-        # exit sector * enemy_adj_type * potion_adj * has_mana * front_blocked
-        return 9 * 4 * 2 * 2 * 2
+        # exit sector * enemy_adj_type * potion_adj * has_mana * front_blocked * has_coin
+        return 9 * 4 * 2 * 2 * 2 * 2 # = 576
 
     @classmethod
     def random_genome(cls) -> List[int]:
@@ -188,11 +188,14 @@ class DecisionTreeController(BaseController):
         potion_adj = self._has_adjacent_potion(agent, dungeon)      # 0/1
         has_mana = 1 if agent.mana > 0 else 0                       # 0/1
         front_blocked = self._front_blocked(agent, dungeon)         # 0/1
+        coin_adj = self._has_adjacent_coin(agent, dungeon)          # 0/1
 
-        # ((((exit * 4 + enemy) * 2 + potion) * 2 + has_mana) * 2 + front_blocked)
+        # ((((exit * 4 + enemy) * 2 + potion) * 2(coin_adj) * 2 + has_mana) * 2 + front_blocked)
+
         idx = exit_index
         idx = idx * 4 + enemy_type
         idx = idx * 2 + potion_adj
+        idx = idx * 2 + coin_adj
         idx = idx * 2 + has_mana
         idx = idx * 2 + front_blocked
         return idx
@@ -209,6 +212,13 @@ class DecisionTreeController(BaseController):
             if dungeon.in_bounds(x, y) and dungeon.get_tile(x, y) == monster_type:
                 return True
         return False
+
+    def _has_adjacent_coin(self, agent: Agent, dungeon: Dungeon) -> int:
+        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1), (0, 0)]:
+            x, y = agent.x + dx, agent.y + dy
+            if dungeon.in_bounds(x, y) and dungeon.get_tile(x, y) == TileType.COIN:
+                return 1
+        return 0
 
     def _best_walkable_move(self, agent: Agent, dungeon: Dungeon) -> Action:
         """

@@ -8,9 +8,9 @@ import random
 from controllers import DecisionTreeController
 from training import evaluate_controller
 
-POP_SIZE = 50
+POP_SIZE = 100
 NUM_GENERATIONS = 60
-MUTATION_RATE = 0.1
+MUTATION_RATE = 0.2
 TOURNAMENT_SIZE = 3
 ELITE_FRACTION = 0.1   # keep top 10%
 EPISODES_PER_EVAL = 20
