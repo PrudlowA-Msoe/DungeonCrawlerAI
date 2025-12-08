@@ -16,6 +16,7 @@ from config import (
     COLOR_MONSTER_MAGIC,
     COLOR_HEALTH_POTION,
     COLOR_MANA_POTION,
+    COLOR_COIN,
 )
 
 from sprites import (
@@ -37,6 +38,7 @@ class TileType(Enum):
     MONSTER_MAGIC = auto()
     HEALTH_POTION = auto()
     MANA_POTION = auto()
+    COIN = auto()
 
 
 Grid = List[List[TileType]]
@@ -138,8 +140,8 @@ class Dungeon:
         ]
         random.shuffle(empty_cells)
 
-        max_monsters = 2
-        num_monsters = min(random.randint(0, max_monsters), len(empty_cells))
+        max_monsters = 3
+        num_monsters = min(random.randint(1, max_monsters), len(empty_cells))
         for i in range(num_monsters):
             x, y = empty_cells.pop()
             if i % 2 == 0:
@@ -155,6 +157,12 @@ class Dungeon:
                 self.grid[y][x] = TileType.HEALTH_POTION
             else:
                 self.grid[y][x] = TileType.MANA_POTION
+
+        max_coins = 3
+        num_coins = min(random.randint(0, max_coins), len(empty_cells))
+        for _ in range(num_coins):
+            x, y = empty_cells.pop()
+            self.grid[y][x] = TileType.COIN
 
     def reset(self) -> None:
         """Reset dungeon to simple layout"""
@@ -193,7 +201,7 @@ class Dungeon:
                 TileType.MONSTER_MELEE,
                 TileType.MONSTER_MAGIC,
             ):
-                damage += 5
+                damage += 10
 
         if damage > 0:
             agent.take_damage(damage)
@@ -226,8 +234,7 @@ class Dungeon:
                     surface.blit(SPRITE_HEALTH, pos)
                 elif tile == TileType.MANA_POTION:
                     surface.blit(SPRITE_MANA, pos)
-                # if/when you add coins:
-                # elif tile == TileType.COIN:
-                #     surface.blit(SPRITE_COIN, pos)
+                elif tile == TileType.COIN:
+                    surface.blit(SPRITE_COIN, pos)
 
 

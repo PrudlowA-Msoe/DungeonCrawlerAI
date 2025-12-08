@@ -16,15 +16,17 @@ def manhattan(a, b) -> int:
 
 def run_episode(
     controller: BaseController, seed: Optional[int] = None
-) -> Tuple[bool, int, int, int, int, int, int, int]:
+) -> Tuple[bool, int, int, int, int, int, int, int, int]:
     """
     Run a single episode with the controller on a randomized 5x5 dungeon
+
     Returns:
         reached_exit: bool
         steps_taken: int
         total_damage_taken: int
         monsters_killed: int
         potions_collected: int
+        coins_collected: int
         initial_distance_to_exit: int
         final_distance_to_exit: int
         best_distance_to_exit: int
@@ -59,6 +61,7 @@ def run_episode(
                 agent.damage_taken,
                 agent.monsters_killed,
                 agent.potions_collected,
+                agent.coins_collected,
                 initial_dist,
                 final_dist,
                 best_dist,
@@ -74,6 +77,7 @@ def run_episode(
                 agent.damage_taken,
                 agent.monsters_killed,
                 agent.potions_collected,
+                agent.coins_collected,
                 initial_dist,
                 final_dist,
                 best_dist,
@@ -87,6 +91,7 @@ def run_episode(
         agent.damage_taken,
         agent.monsters_killed,
         agent.potions_collected,
+        agent.coins_collected,
         initial_dist,
         final_dist,
         best_dist,
@@ -97,8 +102,8 @@ def evaluate_controller(controller: BaseController, num_episodes: int = 10) -> f
     """
     Fitness combining:
       + Big reward for reaching exit
-      + Reward for the closest distance to exit reached in the episode
-      + Reward for killing monsters and collecting potions
+      + Reward for closest distance to exit reached
+      + Reward for killing monsters, collecting potions, collecting coins
       - Penalty for damage
     """
     total_reward = 0.0
@@ -110,6 +115,7 @@ def evaluate_controller(controller: BaseController, num_episodes: int = 10) -> f
             damage_taken,
             monsters_killed,
             potions_collected,
+            coins_collected,
             initial_dist,
             final_dist,
             best_dist,
@@ -118,15 +124,19 @@ def evaluate_controller(controller: BaseController, num_episodes: int = 10) -> f
         dist_improvement = max(0, initial_dist - best_dist)
 
         if reached_exit:
-            reward = 200.0 - 2.0 * steps
+            reward = 200.0 - 4.0 * steps
         else:
             reward = -30.0
 
+        # Progress
         reward += 8.0 * dist_improvement
 
-        # Reward combat
-        reward += 10.0 * monsters_killed
+        # combat + items
+        reward += 25.0 * monsters_killed
         reward += 5.0 * potions_collected
+
+        # encourage coins
+        reward += 20.0 * coins_collected
 
         # Penalize damage
         reward -= 0.3 * damage_taken
