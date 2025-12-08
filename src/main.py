@@ -1,14 +1,18 @@
 import sys
-from typing import Optional
+from typing import Optional, Tuple, List
 
 import pygame
 
 from config import GRID_WIDTH, GRID_HEIGHT, TILE_SIZE, FPS, COLOR_BG
 from dungeon import Dungeon
 from agent import Agent, Action
-from controllers import RandomWalkerController, DecisionTreeController
+from controllers import DecisionTreeController
 
-BEST_GENOME = [0, 0, 2, 1, 1, 1, 0, 0, 3]
+# Best genome from GA
+BEST_GENOME = [5, 5, 1, 5, 0, 7, 3, 6, 7, 6, 5, 1, 4, 1, 7, 4, 6, 1, 5, 7, 2, 3, 3, 2, 6, 0, 0, 5, 6, 6, 0, 4, 1, 4, 6, 2, 0, 1, 5, 6, 1, 7, 7, 1, 6, 2, 0, 6, 6, 1, 3, 3, 2, 4, 4, 5, 2, 4, 5, 6, 2, 2, 6, 0, 6, 7, 4, 2, 7, 3, 1, 4, 5, 0, 7, 6, 5, 0, 4, 4, 3, 1, 6, 6, 0, 7, 6, 3, 5, 4, 3, 0, 3, 4, 4, 4, 7, 3, 3, 4, 7, 1, 5, 7, 1, 0, 4, 0, 0, 1, 1, 4, 3, 0, 6, 0, 3, 7, 7, 5, 7, 5, 1, 2, 4, 4, 0, 3, 4, 0, 6, 7, 6, 5, 1, 6, 0, 0, 1, 0, 6, 6, 5, 4, 0, 6, 6, 4, 3, 6, 6, 6, 6, 3, 3, 2, 5, 3, 4, 1, 0, 7, 3, 0, 5, 5, 1, 3, 4, 4, 5, 7, 7, 4, 1, 1, 1, 0, 5, 6, 1, 7, 6, 3, 6, 0, 2, 4, 6, 4, 7, 4, 5, 0, 7, 6, 3, 3, 5, 0, 0, 2, 0, 7, 4, 7, 4, 5, 5, 0, 3, 4, 5, 5, 6, 4, 7, 5, 1, 7, 1, 5, 0, 7, 0, 6, 1, 3, 5, 2, 6, 4, 7, 3, 7, 1, 6, 4, 2, 1, 0, 2, 6, 1, 1, 2, 5, 3, 1, 2, 1, 3, 5, 4, 1, 6, 5, 7, 3, 6, 1, 1, 1, 3, 7, 6, 5, 1, 2, 0, 4, 0, 6, 5, 7, 4, 6, 0, 4, 6, 1, 4, 5, 6, 5, 0, 3, 7]
+
+MAX_FLOORS = 5
+
 
 def handle_keyboard_input() -> Optional[Action]:
     keys = pygame.key.get_pressed()
@@ -23,57 +27,136 @@ def handle_keyboard_input() -> Optional[Action]:
     return None
 
 
+def make_floor() -> Tuple[Dungeon, Agent]:
+    """
+    Create a new randomized dungeon floor
+    """
+    dungeon = Dungeon()
+    dungeon.generate_random_layout()
+    agent = Agent(dungeon.start_pos)
+    return dungeon, agent
+
+
+def compute_floor_score(agent: Agent, steps: int) -> float:
+    """
+    Compute a per floor score
+    """
+    score = 200.0 - 2.0 * steps
+    score += 10.0 * agent.monsters_killed
+    score += 5.0 * agent.potions_collected
+    score -= 0.3 * agent.damage_taken
+    return score
+
+
 def run_game() -> None:
     pygame.init()
     screen_size = (GRID_WIDTH * TILE_SIZE, GRID_HEIGHT * TILE_SIZE)
     screen = pygame.display.set_mode(screen_size)
-    pygame.display.set_caption("5x5 Dungeon Prototype")
+    pygame.display.set_caption(f"5x5 Dungeon - Floor 1/{MAX_FLOORS}")
 
     clock = pygame.time.Clock()
 
-    dungeon = Dungeon()
-    agent = Agent(dungeon.start_pos)
+    current_floor = 1
+    dungeon, agent = make_floor()
 
     use_ai_controller = False
     ai_controller = DecisionTreeController(genome=BEST_GENOME)
+    ai_controller.reset_episode()
+
+    font = pygame.font.SysFont(None, 24)
+
+    last_actions: List[Action] = []
+    floor_steps: int = 0
 
     running = True
     while running:
-        dt = clock.tick(FPS)
+        _dt = clock.tick(FPS)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
-                # Press 'r' to reset, 'a' to toggle AI, 'esc' to quit
+                # Press 'r' to restart from floor 1 with new random floors
+                # 'a' to toggle AI, 'esc' to quit
                 if event.key == pygame.K_r:
-                    dungeon.reset()
-                    agent = Agent(dungeon.start_pos)
+                    current_floor = 1
+                    dungeon, agent = make_floor()
+                    use_ai_controller = False
+                    ai_controller.reset_episode()
+                    last_actions.clear()
+                    floor_steps = 0
+                    pygame.display.set_caption(f"5x5 Dungeon - Floor {current_floor}/{MAX_FLOORS}")
+                    print("Restarted run at floor 1.")
                 elif event.key == pygame.K_a:
                     use_ai_controller = not use_ai_controller
                     print(f"AI controller: {use_ai_controller}")
+                    if use_ai_controller:
+                        last_actions.clear()
                 elif event.key == pygame.K_ESCAPE:
                     running = False
 
-        # Decide action (either from keyboard or from a controller)
-        action: Optional[Action] = None
         if use_ai_controller:
             action = ai_controller.select_action(agent, dungeon)
+            last_actions.append(action)
+            if len(last_actions) > 3:
+                last_actions.pop(0)
         else:
             action = handle_keyboard_input()
 
         if action is not None:
+            floor_steps += 1
             agent.step(action, dungeon)
 
-        # Check for exit
         if agent.at_exit(dungeon):
-            # For now just print, change floors later
-            print("Reached exit! Press R to reset or A to watch the AI again.")
+            floor_score = compute_floor_score(agent, floor_steps)
+            print(
+                f"Reached exit on floor {current_floor}! "
+                f"Steps: {floor_steps}, Damage: {agent.damage_taken}, "
+                f"Monsters killed: {agent.monsters_killed}, "
+                f"Potions: {agent.potions_collected}, "
+                f"Score: {floor_score:.2f}"
+            )
+
+            if current_floor < MAX_FLOORS:
+                current_floor += 1
+                dungeon, agent = make_floor()
+                ai_controller.reset_episode()
+                last_actions.clear()
+                floor_steps = 0
+                pygame.display.set_caption(f"5x5 Dungeon - Floor {current_floor}/{MAX_FLOORS}")
+                print(f"Advancing to floor {current_floor}...")
+            else:
+                print("Completed all 5 floors! Starting a new run at floor 1.")
+                current_floor = 1
+                dungeon, agent = make_floor()
+                ai_controller.reset_episode()
+                last_actions.clear()
+                floor_steps = 0
+                pygame.display.set_caption(f"5x5 Dungeon - Floor {current_floor}/{MAX_FLOORS}")
 
         # Draw
         screen.fill(COLOR_BG)
         dungeon.draw(screen)
         agent.draw(screen)
+
+        # floor + AI status
+        hud_text = (
+            f"Floor {current_floor}/{MAX_FLOORS}  "
+            f"AI: {'ON' if use_ai_controller else 'OFF'}  (A toggle, R restart)"
+        )
+        text_surface = font.render(hud_text, True, (255, 255, 255))
+        screen.blit(text_surface, (5, 5))
+
+        # last 3 AI decisions
+        if use_ai_controller:
+            if last_actions:
+                names = [a.name for a in last_actions]
+                decisions_text = "Last AI actions: " + ", ".join(names)
+            else:
+                decisions_text = "Last AI actions: (none yet)"
+            text_surface2 = font.render(decisions_text, True, (200, 200, 200))
+            screen.blit(text_surface2, (5, 5 + 22))
+
         pygame.display.flip()
 
     pygame.quit()
@@ -82,3 +165,4 @@ def run_game() -> None:
 
 if __name__ == "__main__":
     run_game()
+

@@ -1,5 +1,5 @@
 """
-Genetic algorithm for evolving movement-only DecisionTreeControllers (for right now. later more will be added)
+Genetic algorithm for evolving DecisionTreeControllers on the dungeon
 """
 
 from typing import List, Tuple
@@ -8,14 +8,11 @@ import random
 from controllers import DecisionTreeController
 from training import evaluate_controller
 
-
-# hyperparams
-
 POP_SIZE = 50
-NUM_GENERATIONS = 40
-MUTATION_RATE = 0.1      # per gene
+NUM_GENERATIONS = 60
+MUTATION_RATE = 0.1
 TOURNAMENT_SIZE = 3
-ELITE_FRACTION = 0.1 # keep these percentage
+ELITE_FRACTION = 0.1   # keep top 10%
 EPISODES_PER_EVAL = 20
 
 
@@ -32,7 +29,7 @@ def evaluate_genome(genome: Genome) -> float:
 
 
 def tournament_select(pop: List[Genome], fitnesses: List[float]) -> Genome:
-    """Tournament selection: pick the best among a few random individuals."""
+    """tournament selection"""
     best_idx = None
     for _ in range(TOURNAMENT_SIZE):
         idx = random.randrange(len(pop))
@@ -42,7 +39,7 @@ def tournament_select(pop: List[Genome], fitnesses: List[float]) -> Genome:
 
 
 def crossover(parent1: Genome, parent2: Genome) -> Genome:
-    """Uniform crossover: choose each gene from either parent with 50/50 chance."""
+    """50 50 crossover"""
     child: Genome = []
     for g1, g2 in zip(parent1, parent2):
         child.append(g1 if random.random() < 0.5 else g2)
@@ -50,7 +47,7 @@ def crossover(parent1: Genome, parent2: Genome) -> Genome:
 
 
 def mutate(genome: Genome) -> Genome:
-    """Per-gene mutation: with some probability, replace with a new random action index."""
+    """per gene mutation"""
     num_actions = DecisionTreeController.num_actions()
     for i in range(len(genome)):
         if random.random() < MUTATION_RATE:
@@ -61,7 +58,7 @@ def mutate(genome: Genome) -> Genome:
 def run_ga(seed: int = 0) -> Tuple[Genome, float]:
     random.seed(seed)
 
-    # Initialize pop
+    #init pop
     population: List[Genome] = [make_random_genome() for _ in range(POP_SIZE)]
 
     best_overall_genome: Genome = population[0][:]
@@ -70,9 +67,10 @@ def run_ga(seed: int = 0) -> Tuple[Genome, float]:
     num_elites = max(1, int(ELITE_FRACTION * POP_SIZE))
 
     for gen in range(NUM_GENERATIONS):
+        # eval pop
         fitnesses = [evaluate_genome(g) for g in population]
 
-        # Track best
+        # track best guy
         gen_best_idx = max(range(POP_SIZE), key=lambda i: fitnesses[i])
         gen_best_fitness = fitnesses[gen_best_idx]
         gen_best_genome = population[gen_best_idx]
@@ -88,11 +86,11 @@ def run_ga(seed: int = 0) -> Tuple[Genome, float]:
             f"avg: {avg_fitness:.2f}"
         )
 
-        # keep elites
+        # sort by fitness and keep elites
         sorted_indices = sorted(range(POP_SIZE), key=lambda i: fitnesses[i], reverse=True)
         new_population: List[Genome] = [population[i][:] for i in sorted_indices[:num_elites]]
 
-        # selection + crossover + mutation
+        # rest of population selection + crossover + mutation
         while len(new_population) < POP_SIZE:
             parent1 = tournament_select(population, fitnesses)
             parent2 = tournament_select(population, fitnesses)
@@ -108,10 +106,6 @@ def run_ga(seed: int = 0) -> Tuple[Genome, float]:
 
 
 if __name__ == "__main__":
-    best_genome, best_fit = run_ga(seed=42)
+    best_genome, best_fit = run_ga(seed=0)
 
-    # If you want to try the best genome in your PyGame `main.py`,
-    # you can copy-paste `best_genome` there and construct:
-    #
-    # from controllers import DecisionTreeController
-    # ai_controller = DecisionTreeController(genome=best_genome)
+
