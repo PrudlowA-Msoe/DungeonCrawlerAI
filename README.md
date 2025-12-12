@@ -27,7 +27,7 @@ Every file/folder and its purpose in one sentence:
 - **`dungeon.py`** – Defines the `Dungeon` environment, tile types (walls, monsters, potions, coins, exit), random layout generation, connectivity checks, and rendering. :contentReference[oaicite:2]{index=2}  
 - **`ga.py`** – Core genetic algorithm loop: initializes a population of genomes, evaluates them in the dungeon, performs selection, crossover, mutation, and prints fitness over generations. :contentReference[oaicite:3]{index=3}  
 - **`hillclimbing.py`** – Hill-climbing optimization over parameters of a hand-made controller to produce a strong baseline.
-- **`human.py`** – Human-controlled policy that maps keyboard input (movement / attacks / potion use) into actions, used as a baseline or for demos.
+- **`human.py`** – Human controller that maps keyboard input (movement / attacks / potion use) into actions, used as a baseline or for demos.
 - **`hyperparam_sweep_mutation.py`** – Runs multiple GA trainings across different hyperparameter combinations (population, mutation rate, episodes per eval, etc.), logging summary stats and saving plots comparing settings. :contentReference[oaicite:4]{index=4}  
 - **`main.py`** – PyGame front-end that loads a chosen “best” genome, runs through 5 random floors, lets you toggle between AI and keyboard control, and logs floor scores plus the AI’s last few actions. :contentReference[oaicite:5]{index=5}  
 - **`plot_ga_fitness_over_time.py`** – Convenience script to run GA training and save a matplotlib figure of best vs. average fitness per generation. :contentReference[oaicite:6]{index=6}  
@@ -219,7 +219,7 @@ python compare-algorithms.py
 **What this script does**
 
 - Runs each controller type on many random dungeon floors, for example:
-  - Human-like handmade controller
+  - Human handmade controller
   - GA-evolved decision-tree controller
   - Hill-climber–optimized handmade controller
 - Uses the same scoring function as the rest of the project:
@@ -260,7 +260,7 @@ python hillclimbing.py
 **What it does**
 
 - Starts from a parameterized **hand-designed** controller (with weights for things like distance to exit, monster risk, etc.).
-- Repeatedly perturbs those parameters and **keeps the changes** that improve the average fitness on sampled dungeons.
+- Repeatedly overwrites those parameters and **keeps the changes** that improve the average fitness on sampled dungeons.
 - Prints:
   - The parameter changes over time
   - The final performance achieved by the hill-climbed controller
