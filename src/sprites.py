@@ -1,3 +1,15 @@
+"""
+sprites.py
+
+Utility module for loading and scaling sprite images for the dungeon tiles.
+
+Responsibilities:
+    - Locate sprite assets relative to the project directory.
+    - Load PNG files using pygame.image.load.
+    - Scale them to TILE_SIZE so they fit exactly one grid cell.
+    - Expose named constants for each sprite:
+        * SPRITE_WALL, SPRITE_PLAYER, SPRITE_MONSTER_MELEE, ...
+"""
 import os
 import pygame
 from config import TILE_SIZE

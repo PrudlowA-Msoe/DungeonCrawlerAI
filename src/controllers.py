@@ -1,3 +1,25 @@
+"""
+controllers.py
+
+Defines several controller classes that map dungeon state to Actions:
+
+    - BaseController:
+        Abstract interface – all controllers implement select_action() and
+        reset_episode().
+
+    - RandomWalkerController:
+        Very simple baseline that chooses random *valid* movement actions while
+        avoiding walls.
+
+    - DecisionTreeController:
+        GA-trainable, table-based policy over a discrete feature space.
+        The genome is a list of action indices, one per discrete state.
+
+These controllers are used by:
+    - ga.py for evolution
+    - human-like and hill-climbing scripts for comparison
+    - main.py for interactive visualization of learned policies.
+"""
 import random
 from typing import List, Sequence, Tuple
 
@@ -6,7 +28,17 @@ from dungeon import Dungeon, TileType
 
 
 class BaseController:
-    """interface for controllers"""
+    """Abstract interface for all controllers.
+
+    Any controller used in this project should subclass BaseController and
+    implement:
+
+        - select_action(agent, dungeon) -> Action
+        - reset_episode() -> None
+
+    This allows the training/evaluation code to treat GA, human-like, and
+    hill-climber controllers uniformly.
+    """
 
     def select_action(self, agent: Agent, dungeon: Dungeon) -> Action:
         raise NotImplementedError
@@ -17,9 +49,15 @@ class BaseController:
 
 
 class RandomWalkerController(BaseController):
-    """
-    avoid combat
-    """
+    """Baseline controller that walks randomly but avoids walls.
+
+        Behavior:
+            - Samples from movement actions {UP, DOWN, LEFT, RIGHT}
+            - Filters out actions that would step into non-walkable tiles
+            - If no movement is possible, returns STAY
+
+        This baseline is useful for sanity checks and comparative evaluation.
+        """
 
     def select_action(self, agent: Agent, dungeon: Dungeon) -> Action:
         candidate_actions = [Action.UP, Action.DOWN, Action.LEFT, Action.RIGHT]

@@ -1,3 +1,21 @@
+"""
+hillclimbing.py
+
+Implements a simple hill-climbing optimizer over a parameterized
+hand-designed controller.
+
+Workflow:
+    - Start from initial weights that define a handmade heuristic policy
+      (e.g., weights on distance-to-exit, monster danger, item value).
+    - At each iteration:
+        * Propose a small random change to the weights.
+        * Evaluate the modified controller over several random floors.
+        * If performance improves, accept the new weights.
+    - After many iterations, keep the best set of weights found.
+
+This provides a non-GA baseline that still uses optimization, making it
+useful for algorithm comparison against the GA-evolved controller.
+"""
 import random
 from typing import List, Tuple, Dict, Set, Optional
 from collections import deque

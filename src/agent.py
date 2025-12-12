@@ -1,3 +1,22 @@
+"""
+agent.py
+
+Defines the controllable dungeon agent and its action space.
+
+The Agent encapsulates:
+    - Position on the grid (x, y)
+    - Health and mana pools
+    - Inventory of health/mana potions
+    - Combat interactions (melee and magic attacks)
+    - Tracking statistics for evaluation:
+        * Total damage taken
+        * Number of monsters killed
+        * Number of potions collected
+        * Number of coins collected
+
+The Action enum enumerates all discrete actions that controllers can choose,
+and is shared across the different controller implementations and the GA.
+"""
 from enum import Enum, auto
 from typing import Tuple
 
@@ -12,6 +31,15 @@ Pos = Tuple[int, int]
 
 
 class Action(Enum):
+    """Enumerated action space available to any controller.
+
+        Actions include:
+            - Movement: UP, DOWN, LEFT, RIGHT, STAY
+            - Combat: MELEE (sword), MAGIC_BLAST (ranged spell)
+            - Resource usage: DRINK_HEALTH, DRINK_MANA
+
+        Controllers choose one of these at every time step.
+        """
     UP = auto()
     DOWN = auto()
     LEFT = auto()
@@ -25,15 +53,29 @@ class Action(Enum):
 
 class Agent:
     """
-    The controlled agent
-    - Position
-    - Health n mana
-    - Health/mana potions
-    - Melee and magic attacks
-    - Tracks damage, monsters killed, potions collected, coins collected
+    Player-controlled or AI-controlled agent inside the dungeon.
+
+    The Agent stores all dynamic state for a single episode:
+        - Current grid position
+        - Health and mana
+        - Counts of health/mana potions held
+        - Counters that are used to compute fitness:
+            * damage_taken
+            * monsters_killed
+            * potions_collected
+            * coins_collected
+
+    The Agent does not decide actions on its own – it simply executes
+    the chosen Action and updates its internal state + the Dungeon.
+    Controllers (GA, human, hill-climber, etc.) use this API.
     """
 
     def __init__(self, start_pos: Pos):
+        """Initialize a fresh agent at the given start position.
+
+            Args:
+                start_pos (Pos): (x, y) tile coordinates where the agent spawns.
+        """
         self.start_pos: Pos = start_pos
         self.x, self.y = start_pos
 
@@ -164,6 +206,11 @@ class Agent:
         return (self.x, self.y) == dungeon.exit_pos
 
     def draw(self, surface: pygame.Surface) -> None:
+        """Render the agent sprite at its current tile location.
+
+                Args:
+                    surface (pygame.Surface): PyGame surface to draw onto.
+        """
         surface.blit(
             SPRITE_PLAYER,
             (self.x * TILE_SIZE, self.y * TILE_SIZE),

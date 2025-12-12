@@ -1,3 +1,21 @@
+"""
+main.py
+
+Interactive PyGame front-end for visualizing the dungeon and controllers.
+
+Features:
+    - Spawns a sequence of random dungeon floors (MAX_FLOORS).
+    - Creates an Agent and a DecisionTreeController using BEST_GENOME.
+    - Allows toggling between human keyboard control and AI control.
+    - Draws the dungeon, agent, HUD text, and tracks last few AI actions.
+    - Logs per-floor statistics (steps, damage, kills, coins, potions, score).
+
+Controls:
+    - Arrow keys: Move the agent (when human control is active).
+    - A: Toggle AI controller on/off.
+    - R: Restart from floor 1 with freshly randomized floors.
+    - ESC / window close: Quit.
+"""
 import sys
 from typing import Optional, Tuple, List
 
@@ -16,6 +34,12 @@ MAX_FLOORS = 5
 
 
 def handle_keyboard_input() -> Optional[Action]:
+    """Map raw keyboard input to an Action for human control.
+
+        Returns:
+            Action | None: Concrete action if a movement key is pressed,
+            or None if no relevant key is held down.
+        """
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP]:
         return Action.UP

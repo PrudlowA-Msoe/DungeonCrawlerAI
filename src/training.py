@@ -1,3 +1,19 @@
+"""
+training.py
+
+Provides core training and evaluation utilities shared across:
+
+    - Genetic algorithm (ga.py)
+    - Hyperparameter sweeps (hyperparam_sweep_mutation.py)
+    - Algorithm comparisons (compare-algorithms.py)
+
+Key functions:
+    - run_episode(controller, dungeon, max_steps): simulate a single floor
+      and return statistics.
+    - compute_floor_score(...): convert episode stats into a scalar reward.
+    - evaluate_controller(controller, num_episodes): average the score
+      over multiple randomized floors to estimate fitness.
+"""
 from typing import Tuple, Optional
 import random
 

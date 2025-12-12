@@ -1,3 +1,23 @@
+"""
+dungeon.py
+
+Defines the Dungeon environment for the 5x5 (or more general) grid.
+
+Responsibilities:
+    - Represent the dungeon layout using a grid of TileType values.
+    - Randomly generate floors with:
+        * Walls / rocks
+        * Melee and magic monsters (with different weaknesses)
+        * Health and mana potions
+        * Coins
+        * A single exit tile
+    - Provide helper methods for:
+        * Checking bounds and walkability
+        * Getting/setting/clearing tiles
+        * Drawing the dungeon with either colored tiles or sprites
+    - Encapsulate repeated logic so that agents/controllers do not manipulate
+      raw grid structures directly.
+"""
 from enum import Enum, auto
 from typing import List, Tuple, Optional
 from collections import deque
@@ -31,6 +51,16 @@ from sprites import (
 
 
 class TileType(Enum):
+    """Enumeration of all possible dungeon tile types.
+
+        Includes:
+            - EMPTY: walkable floor
+            - WALL: rock or obstacle, not walkable
+            - EXIT: goal tile that ends the floor
+            - MONSTER_MELEE / MONSTER_MAGIC: enemies with different weaknesses
+            - HEALTH_POTION / MANA_POTION: items that can be picked up
+            - COIN: collectible that improves fitness but does not affect health
+        """
     EMPTY = auto()
     WALL = auto()
     EXIT = auto()
@@ -46,8 +76,15 @@ Pos = Tuple[int, int]
 
 
 class Dungeon:
-    """
-    dungeon floor on a 5x5 grid
+    """Grid-based dungeon environment used for training and visualization.
+
+    Stores:
+        - A 2D list of TileType values
+        - The location of the exit
+        - Random generation parameters for enemies, obstacles, and items
+
+    Provides high-level API so that Agent and controllers never need to
+    manipulate the raw grid directly.
     """
 
     def __init__(self, width: int = GRID_WIDTH, height: int = GRID_HEIGHT):
@@ -59,7 +96,7 @@ class Dungeon:
         self._create_basic_layout()
 
     def _create_basic_layout(self) -> None:
-        """Simple"""
+        """Simple layout with rock in middle"""
         for y in range(self.height):
             for x in range(self.width):
                 self.grid[y][x] = TileType.EMPTY
@@ -182,6 +219,7 @@ class Dungeon:
         self.grid[y][x] = TileType.EMPTY
 
     def is_walkable(self, x: int, y: int) -> bool:
+        """check if walkable"""
         if not self.in_bounds(x, y):
             return False
         tile = self.get_tile(x, y)
@@ -208,6 +246,15 @@ class Dungeon:
 
 
     def draw(self, surface: pygame.Surface) -> None:
+        """Draw the entire dungeon grid onto the given PyGame surface.
+
+                Depending on your current setup, this may either:
+                    - Render colored rectangles for tile types, or
+                    - Blit their corresponding sprites.
+
+                Args:
+                    surface (pygame.Surface): Target surface for drawing.
+                """
         for y in range(self.height):
             for x in range(self.width):
                 rect = pygame.Rect(

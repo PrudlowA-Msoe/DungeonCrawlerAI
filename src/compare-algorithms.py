@@ -1,12 +1,20 @@
 """
-compare_algorithms.py
+compare-algorithms.py
 
-Runs three controllers across 200 randomized 5x5 floors:
-- HillClimbingHandmadeController
-- GA-evolved DecisionTreeController (uses BEST_GENOME from main.py if available)
-- HumanLikeHandmadeController
+Batch evaluation script for comparing multiple controllers:
 
-Prints average floor-score + extra metrics for comparison.
+    - HumanLikeHandmadeController (human-style reactive rules)
+    - GeneticAlgorithm DecisionTreeController (evolved genome)
+    - HillClimber controller (handmade policy with optimized weights)
+
+For each controller, this script:
+    - Runs many episodes on randomized dungeon floors.
+    - Collects aggregate statistics:
+        * Average score over all floors
+        * Average score on successful floors only
+        * Success rate (exit reached)
+        * Average steps, damage, kills, potions, coins
+    - Prints a summary table that can be pasted into the report/presentation.
 """
 
 from __future__ import annotations

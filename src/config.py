@@ -1,3 +1,21 @@
+"""
+config.py
+
+Central configuration for the dungeon project.
+
+Contains:
+    - Grid and rendering settings:
+        * GRID_WIDTH, GRID_HEIGHT, TILE_SIZE, FPS
+        * Colors for background and tile types
+
+    - Spawn parameters for random dungeon generation:
+        * Max number of monsters, potions, coins per floor
+
+    - Any other global constants used across multiple modules.
+
+Changing values here lets you quickly adjust the difficulty or visuals
+without touching the core logic in dungeon.py, agent.py, or controllers.py.
+"""
 GRID_WIDTH = 5
 GRID_HEIGHT = 5
 TILE_SIZE = 96  # pixels, so window is 480x480

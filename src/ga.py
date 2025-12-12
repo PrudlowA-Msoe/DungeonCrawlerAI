@@ -1,5 +1,21 @@
 """
-Genetic algorithm for evolving DecisionTreeControllers on the dungeon
+ga.py
+
+Genetic algorithm for evolving DecisionTreeControllers on the dungeon task.
+
+The GA operates over genomes that are:
+    - Lists of integers, one per discrete state handled by DecisionTreeController.
+    - Each gene indexes into the controller's ACTIONS list.
+
+The algorithm uses:
+    - Tournament selection
+    - Uniform crossover (per-gene 50/50 from each parent)
+    - Per-gene mutation (flip to random action with probability MUTATION_RATE)
+    - Elitism (keep best ELITE_FRACTION of population each generation)
+
+This module is the main entry point for training GA policies:
+    - `run_ga()` drives the evolution loop and prints per-generation fitness.
+    - The best genome can then be copied into main.py for visualization.
 """
 
 from typing import List, Tuple
@@ -8,22 +24,24 @@ import random
 from controllers import DecisionTreeController
 from training import evaluate_controller
 
-POP_SIZE = 150
-NUM_GENERATIONS = 70
-MUTATION_RATE = 0.2
-TOURNAMENT_SIZE = 5
+POP_SIZE = 100
+NUM_GENERATIONS = 60
+MUTATION_RATE = 0.1
+TOURNAMENT_SIZE = 3
 ELITE_FRACTION = 0.1   # keep top 10%
-EPISODES_PER_EVAL = 20
+EPISODES_PER_EVAL = 5
 
 
 Genome = List[int]
 
 
 def make_random_genome() -> Genome:
+    """return random genome"""
     return DecisionTreeController.random_genome()
 
 
 def evaluate_genome(genome: Genome) -> float:
+    """evaluate genome"""
     controller = DecisionTreeController(genome)
     return evaluate_controller(controller, num_episodes=EPISODES_PER_EVAL)
 
@@ -56,6 +74,26 @@ def mutate(genome: Genome) -> Genome:
 
 
 def run_ga(seed: int = 0) -> Tuple[Genome, float]:
+    """Run the full GA loop and return the best genome discovered.
+
+        Steps:
+            1. Initialize a random population.
+            2. For each generation:
+                - Evaluate fitness of all genomes.
+                - Track the best genome overall.
+                - Build a new population via:
+                    * Elitism
+                    * Tournament selection
+                    * Crossover
+                    * Mutation
+            3. Return the best genome and its fitness.
+
+        Args:
+            seed (int): Random seed for reproducibility.
+
+        Returns:
+            (Genome, float): Tuple of (best_genome, best_fitness).
+        """
     random.seed(seed)
 
     #init pop
